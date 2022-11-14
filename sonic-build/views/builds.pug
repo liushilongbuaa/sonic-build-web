@@ -23,7 +23,7 @@ block content
         td= row.result
         td= row.startTime.substring(0,19)
         td= row.finishTime.substring(0,19)
-        td= row.sourceVersion.substring(0,10)
+        td= row.sourceVersion ? row.sourceVersion.substring(0,10) : ""
         td
           a(href=row._links.web.href, target="_blank") Build Link
         td
