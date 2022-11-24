@@ -11,13 +11,6 @@ module.exports = (app) => {
   // Your code here
   app.log.info("Yay, the app was loaded!");
 
-  app.on("issues.opened", async (context) => {
-    const issueComment = context.issue({
-      body: "Thanks for opening this issue!",
-    });
-    return context.octokit.issues.createComment(issueComment);
-  });
-
   issue_comment.init(app);
   check_run.init(app);
   eventhub.init(app);
