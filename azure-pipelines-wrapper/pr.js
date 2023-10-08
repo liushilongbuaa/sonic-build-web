@@ -1,9 +1,10 @@
 function init(app) {
     app.log.info("Init pr");
 
-    app.on("issue_comment.created", async (context) => {
+    app.on("pull_request", async (context) => {
         var payload = context.payload;
-        console.log(payload)
+        console.log(payload.action)
+        console.log(payload.pull_request.html_url)
   });
 };
 
