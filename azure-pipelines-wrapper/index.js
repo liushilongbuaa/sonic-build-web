@@ -3,17 +3,13 @@
  * @param {import('probot').Probot} app
  */
 
-const issue_comment = require('./issue_comment');
-const check_run = require('./check_run');
-const eventhub = require('./eventhub');
+const pr = require('./pr.js')
 
 module.exports = (app) => {
   // Your code here
   app.log.info("Yay, the app was loaded!");
 
-  issue_comment.init(app);
-  check_run.init(app);
-  eventhub.init(app);
+  pr.init(app)
 
   // For more information on building apps:
   // https://probot.github.io/docs/
