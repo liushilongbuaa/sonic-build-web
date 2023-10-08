@@ -13,6 +13,8 @@ async function startServer() {
 //    var privateKey = await akv.getAppPrivateKey();
 //    var secret = await akv.getAppWebhookSecret();
     console.log("secret", secret)
+    console.log("privateKey", privateKey)
+    console.log("APP_ID", process.env.APP_ID)
     const server = new Server({
         Probot: Probot.defaults({
         appId: process.env.APP_ID,
@@ -24,7 +26,7 @@ async function startServer() {
         webhookProxy: process.env.WEBHOOK_PROXY_URL,
     });
 
-    server.expressApp.get("/api/webhook", (req, res) => res.end("Welcome GitHub Application: Azure Pipelines Wrapper"));
+    server.expressApp.get("/", (req, res) => res.end("Welcome GitHub Application: Azure Pipelines Wrapper"));
     await server.load(app);
 
     server.start();
