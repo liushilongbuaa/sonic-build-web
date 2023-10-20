@@ -19,7 +19,7 @@ async function getSecretFromCache(secretName){
         return process.env[secretName];
     }
 
-    secretName = secretName.replace('_', '-');
+    secretName = secretName.split('_').join('-');
     var value = SecretCache.get(secretName);
     if (value == undefined){
         var secret = await client.getSecret(secretName);
