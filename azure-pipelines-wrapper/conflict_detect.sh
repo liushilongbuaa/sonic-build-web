@@ -9,7 +9,7 @@ BRANCH=$5
 mkdir -p workspace
 cd workspace
 
-rm -rf $(find . -name "tmp.*" -type d -cmin +3600)
+rm -rf $(find . -name "tmp.*" -type d -cmin +30)
 cd $(mktemp -p ./ -d)
 
 curl "https://mssonicbld:$GH_TOKEN@raw.githubusercontent.com/Azure/sonic-pipelines-internal/$BRANCH/azure-pipelines/ms_conflict_detect.sh" -o ms_conflict_detect.sh
