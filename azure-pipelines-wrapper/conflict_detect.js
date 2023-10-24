@@ -5,13 +5,24 @@ const repo = 'sonic-buildimage'
 function init(app) {
     app.log.info("Init conflict detect");
 
-    app.on(["pull_request.opened", "pull_request.synchronize", "pull_request.reopened"], async (context) => {
+    app.on(["pull_request.opened", "pull_request.synchronize", "pull_request.reopened", "issue_comment.created"], async (context) => {
         var payload = context.payload;
         console.log(payload.action)
         console.log(payload.pull_request.html_url)
         if (payload.repository.name != repo){
             console.log("repo not match")
             return 0
+        }
+        if (payload.action == "issue_comment.created"){
+            issue_user_login = payload.issue.user.login;
+            comment_user_login = payload.comment.user.login;
+            comment_body = payload.comment.body.trim();
+            if (issue_user_login != comment_user_login){
+                return
+            }
+            if (comment_body.toLowerCase() != '/azpw run ms_conflict'){
+                return
+            }
         }
 
         var gh_token = await akv.getSecretFromCache("GH_TOKEN")
@@ -43,7 +54,7 @@ function init(app) {
                 status: 'completed',
                 output: {
                     title: "ms code conflict",
-                    summary: "conflict details:\n" + url + "\nPlease resolve conflict in the PR by pushing to PRID-fix branch."
+                    summary: "conflict details:\n" + url + "\nPlease resolve conflict in the PR by pushing to PRID-fix branch.\nThen comment on PR: /azpw run ms_conflict"
                 }
             }
         );

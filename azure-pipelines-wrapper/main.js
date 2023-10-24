@@ -29,4 +29,8 @@ async function startServer() {
 (async () => {
     const txt = await startServer();
     console.log("txt:", txt);
+    while (true) {
+        console.log("heart beat from main.js")
+        await sleep(2000);
+    }
 })();
