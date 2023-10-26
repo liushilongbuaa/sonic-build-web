@@ -20,6 +20,7 @@ function init(app) {
             command = null;
 
             console.log(`issue_comment.created, ${payload.comment.id}`);
+            if (comment_body.toLowerCase().startsWith('/azpw ms_conflict') ){ return };
             if (isDevEnv){
                 if (comment_body.toLowerCase().startsWith('/azpwd comment')){
                     await context.octokit.rest.issues.createComment({

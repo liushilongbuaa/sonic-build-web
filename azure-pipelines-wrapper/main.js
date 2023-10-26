@@ -5,6 +5,7 @@ const akv = require('./keyvault.js');
 async function startServer() {
     var privateKey = await akv.getAppPrivateKey();
     var secret = await akv.getAppWebhookSecret();
+
     const server = new Server({
         Probot: Probot.defaults({
         appId: process.env.APP_ID,
