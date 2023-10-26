@@ -14,7 +14,7 @@ function init(app) {
         var conflict_script_url = await akv.getSecretFromCache("CONFLICT_SCRIPT_URL")
         var url, commit
 
-        console.log(payload.action)
+        console.log("conflict_detect.js ", payload.name, payload.action)
         if (payload.repository.name != repo){
             console.log("repo not match")
             return
