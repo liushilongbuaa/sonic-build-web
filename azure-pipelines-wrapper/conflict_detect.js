@@ -61,7 +61,7 @@ function init(app) {
             base_branch = payload.pull_request.base.ref
             pr_owner = payload.pull_request.user.login
         }
-        app.log.info([url, number, commit, base_branch, pr_owner].join(" "))
+        app.log.info(["Conflict Detect Begin:", url, number, commit, base_branch, pr_owner].join(" "))
 
         context.octokit.rest.checks.create({
             owner: owner,
@@ -76,10 +76,8 @@ function init(app) {
         if (run.status == 254) {
             app.log.info("Conflict detected! PR is not completed.")
         } else if (run.status != 0){
-            app.log.error("=============================")
             app.log.error(run.stderr)
             app.log.error(run.stdout)
-            app.log.error("-----------------------------")
         } else {
             app.log.info("No Conflict.")
             result = 'success'
