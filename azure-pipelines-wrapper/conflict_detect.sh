@@ -1,21 +1,34 @@
-set -ex
+#!/bin/bash
 
-URL=$1
-GH_TOKEN=$2
-MSSONIC_TOKEN=$3
-MSAZURE_TOKEN=$4
-SCRIPT_URL=$5
-
+REPO=$1
 mkdir -p workspace
 cd workspace
+rm -rf $(find . -name "tmp.*" -type d -cmin +10)
 
-rm -rf $(find . -name "tmp.*" -type d -cmin +30)
+mkdir $REPO -p
+cd $REPO
 tmp=$(mktemp -p ./ -d)
 cd $tmp
 
-curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL" -o ms_conflict_detect.sh
-wc -l ms_conflict_detect.sh
+echo "tmp dir: $tmp"
 
-bash ms_conflict_detect.sh $MSAZURE_TOKEN $MSSONIC_TOKEN $GH_TOKEN $URL
-cd ..
+cat > .bashenv << EOF
+URL=$2
+GH_TOKEN=$3
+MSAZURE_TOKEN=$4
+SCRIPT_URL=$5
+PR_OWNER=$6
+PR_ID=$7
+BASE_BRANCH=$8
+EOF
+
+. .bashenv
+
+curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/ms_conflict_detect.sh" -o ms_conflict_detect.sh -L
+curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/azdevops_git_api.sh" -o azdevops_git_api.sh -L
+bash ms_conflict_detect.sh
+rc=$?
+
+cd ../
 rm -rf $tmp
+exit $rc

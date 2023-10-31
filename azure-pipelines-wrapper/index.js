@@ -12,9 +12,9 @@ module.exports = (app) => {
   // Your code here
   app.log.info("Yay, the app was loaded!");
 
-  issue_comment.init(app);
+ // issue_comment.init(app);
   check_run.init(app);
-  eventhub.init(app);
+//  eventhub.init(app);
   conflict_detect.init(app);
 
   // For more information on building apps:
