@@ -5,7 +5,6 @@ const fs = require('fs');
 const { stderr } = require('process');
 const InProgress = 'in_progress'
 const MsConflict = 'ms_conflict'
-var commentid = ''
 
 function init(app) {
     app.log.info("Init conflict detect");
@@ -20,13 +19,6 @@ function init(app) {
         if ("sonic-buildimage" != repo) {
             app.log.info("repo not match!")
             return
-        }
-        if (payload.issue) {
-            if ( commentid == payload.comment.id.toString() ) { return } else { commentid = payload.comment.id.toString() }
-            app.log.info("conflict_detect " + "issue_comment.created " + payload.comment.user.login + " " + payload.comment.id.toString() + ' "' + payload.comment.body + '"')
-        } else {
-            if ( commentid == payload.number.toString() + payload.pull_request.updated_at.toString() ) { return } else { commentid == payload.number.toString() + payload.pull_request.updated_at.toString() }
-            app.log.info("conflict_detect " + "pull_request." + payload.action + " " + payload.pull_request.user.login + " " + payload.pull_request.html_url)
         }
 
         var url, number, commit, base_branch, pr_owner
