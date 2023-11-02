@@ -64,9 +64,9 @@ function init(app) {
         var result = 'failure'
         let run = spawnSync('./conflict_detect.sh', [repo, url, gh_token, msazure_token, script_url, pr_owner, number, base_branch], { encoding: 'utf-8' })
         if (run.status == 254) {
-            app.log.info("[ CONFLICT DETECT ] Conflict detected!", url)
+            app.log.info(["[ CONFLICT DETECT ] Conflict detected!", url].join(" "))
         } else if (run.status != 0){
-            app.log.error("[ CONFLICT DETECT ] Unexpected error:", run.status, run.stderr)
+            app.log.error(["[ CONFLICT DETECT ] Unexpected error:", run.status, run.stderr].join(" "))
         } else {
             app.log.info("[ CONFLICT DETECT ] No Conflict or Resolved!")
             result = 'success'
