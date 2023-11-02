@@ -63,19 +63,17 @@ function init(app) {
         // If it belongs to ms, comment on PR.
         var result = 'failure'
         let run = spawnSync('./conflict_detect.sh', [repo, url, gh_token, msazure_token, script_url, pr_owner, number, base_branch], { encoding: 'utf-8' })
-        app.log.info('[ CONFLICT DETECT ]' ,run.stdout)
         if (run.status == 254) {
-            app.log.info("[ CONFLICT DETECT ] Conflict detected! PR is not completed.")
+            app.log.info("[ CONFLICT DETECT ] Conflict detected!", url)
         } else if (run.status != 0){
-            app.log.error("[ CONFLICT DETECT ] ", run.stderr)
-            app.log.error("[ CONFLICT DETECT ] ", run.stdout)
+            app.log.error("[ CONFLICT DETECT ] Unexpected error:", run.status, run.stderr)
         } else {
-            app.log.info("[ CONFLICT DETECT ] No Conflict.")
+            app.log.info("[ CONFLICT DETECT ] No Conflict or Resolved!")
             result = 'success'
         }
 
         let description = '', comment_at = '', mspr = ''
-        if (run.status == 254 || run.status == 253 || run.status == 252){
+        if (run.status == 254){
             for (const line of run.stdout.split(/\r?\n/)){
                 if (line.startsWith("pr_owner: ")){
                     comment_at = line.replace("pr_owner: ", "")
