@@ -3,15 +3,15 @@
 REPO=$1
 mkdir -p workspace
 cd workspace
-rm -rf $(find . -name "tmp.*" -type d -cmin +30)
+rm -rf $(find . -name "tmp.*" -type d -cmin +600)
 
 mkdir $REPO -p
 cd $REPO
 tmp=$(mktemp -p ./ -d)
 
-apt-get update 2>&1 | tee $tmp.log
-apt-get install git -y 2>&1 | tee $tmp.log
-git config --global --add safe.directory '*' 2>&1 | tee $tmp.log
+apt-get update
+apt-get install git -y
+git config --global --add safe.directory '*'
 
 cd $tmp
 
@@ -34,8 +34,7 @@ curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/ms_conflict_detect.sh" -o ms_conf
 curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/azdevops_git_api.sh" -o azdevops_git_api.sh -L
 ./ms_conflict_detect.sh | tee log.log
 rc=${PIPESTATUS[0]}
-exit $rc
 
 cd ..
-rm -rf ${tmp}*
+rm -rf $tmp
 exit $rc

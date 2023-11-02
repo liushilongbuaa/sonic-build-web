@@ -31,7 +31,7 @@ async function getSecretFromCache(secretName){
 
 async function getAppPrivateKey()
 {
-    return await getSecretFromCache("PRIVATE_KEY1");
+    return await getSecretFromCache("PRIVATE_KEY");
 }
 
 async function getAppWebhookSecret()

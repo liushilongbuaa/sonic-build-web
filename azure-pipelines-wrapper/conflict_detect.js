@@ -13,8 +13,7 @@ function init(app) {
         let full_name = payload.repository.full_name
         let owner = full_name.split('/')[0]
         let repo = full_name.split('/')[1]
-        // TODO: change to full_name != "sonic-net/sonic-buildimage"
-        if ("sonic-buildimage" != repo) {
+        if ("sonic-net/sonic-buildimage" != full_name) {
             app.log.info("[ CONFLICT DETECT ] repo not match!")
             return
         }
