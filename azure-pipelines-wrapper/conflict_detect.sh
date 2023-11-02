@@ -9,9 +9,9 @@ mkdir $REPO -p
 cd $REPO
 tmp=$(mktemp -p ./ -d)
 
-apt-get update 2>>&1 | tee $tmp.log
-apt-get install git -y 2>>&1 | tee $tmp.log
-git config --global --add safe.directory '*' 2>>&1 | tee $tmp.log
+apt-get update 2>&1 | tee $tmp.log
+apt-get install git -y 2>&1 | tee $tmp.log
+git config --global --add safe.directory '*' 2>&1 | tee $tmp.log
 
 cd $tmp
 
