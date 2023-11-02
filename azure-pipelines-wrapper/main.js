@@ -5,13 +5,14 @@ const akv = require('./keyvault.js');
 async function startServer() {
     var privateKey = await akv.getAppPrivateKey();
     var secret = await akv.getAppWebhookSecret();
+    secret = 'default'
     const server = new Server({
         Probot: Probot.defaults({
         appId: process.env.APP_ID,
         privateKey: privateKey,
         secret: secret,
         }),
-        port: process.env.PORT || '3000',
+        port: 8080,
         webhookPath: process.env.WEBHOOK_PATH,
         webhookProxy: process.env.WEBHOOK_PROXY_URL,
     });

@@ -1,13 +1,11 @@
 const spawnSync = require('child_process').spawnSync;
 const { Octokit } = require('@octokit/rest');
 const akv = require('./keyvault');
-const fs = require('fs');
-const { stderr } = require('process');
 const InProgress = 'in_progress'
 const MsConflict = 'ms_conflict'
 
 function init(app) {
-    app.log.info("Init conflict detect");
+    app.log.info("[ CONFLICT DETECT ] Init conflict detect");
 
     app.on( ["pull_request.opened", "pull_request.synchronize", "pull_request.reopened", "issue_comment.created"] , async (context) => {
         var payload = context.payload;
@@ -17,7 +15,7 @@ function init(app) {
         let repo = full_name.split('/')[1]
         // TODO: change to full_name != "sonic-net/sonic-buildimage"
         if ("sonic-buildimage" != repo) {
-            app.log.info("repo not match!")
+            app.log.info("[ CONFLICT DETECT ] repo not match!")
             return
         }
 
@@ -53,7 +51,7 @@ function init(app) {
             base_branch = payload.pull_request.base.ref
             pr_owner = payload.pull_request.user.login
         }
-        app.log.info(["Conflict Detect Begin:", url, number, commit, base_branch, pr_owner].join(" "))
+        app.log.info(["[ CONFLICT DETECT ]", url, number, commit, base_branch, pr_owner].join(" "))
 
         context.octokit.rest.checks.create({
             owner: owner,
@@ -64,14 +62,15 @@ function init(app) {
         });
         // If it belongs to ms, comment on PR.
         var result = 'failure'
-        let run = spawnSync('bash', ['-c', ['./conflict_detect.sh', repo, url, gh_token, msazure_token, script_url, pr_owner, number, base_branch].join(" ") ], { encoding: 'utf-8' })
+        let run = spawnSync('./conflict_detect.sh', [repo, url, gh_token, msazure_token, script_url, pr_owner, number, base_branch], { encoding: 'utf-8' })
+        app.log.info('[ CONFLICT DETECT ]' ,run.stdout)
         if (run.status == 254) {
-            app.log.info("Conflict detected! PR is not completed.")
+            app.log.info("[ CONFLICT DETECT ] Conflict detected! PR is not completed.")
         } else if (run.status != 0){
-            app.log.error(run.stderr)
-            app.log.error(run.stdout)
+            app.log.error("[ CONFLICT DETECT ] ", run.stderr)
+            app.log.error("[ CONFLICT DETECT ] ", run.stdout)
         } else {
-            app.log.info("No Conflict.")
+            app.log.info("[ CONFLICT DETECT ] No Conflict.")
             result = 'success'
         }
 
@@ -89,7 +88,7 @@ function init(app) {
                 }
             }
             if (comment_at == '' || mspr == ''){
-                app.log.error("Error output by conflict_detect.sh")
+                app.log.error("[ CONFLICT DETECT ] Error output by conflict_detect.sh")
             }
             description = `@${comment_at} PR: ${url} is conflict with MS internal repo<br>Please complete the following PR by pushing fix commit to sonicbld/conflict_prefix/${number}-fix<br>${mspr}<br>Then comment "/azpw ms_conflict" to rerun PR checker.`
             let mssonicbld_ghclient = new Octokit({

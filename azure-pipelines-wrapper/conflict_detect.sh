@@ -5,6 +5,10 @@ mkdir -p workspace
 cd workspace
 rm -rf $(find . -name "tmp.*" -type d -cmin +10)
 
+apt-get update
+apt-get install git -y
+git config --global --add safe.directory '*'
+
 mkdir $REPO -p
 cd $REPO
 tmp=$(mktemp -p ./ -d)
@@ -28,6 +32,7 @@ curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/ms_conflict_detect.sh" -o ms_conf
 curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/azdevops_git_api.sh" -o azdevops_git_api.sh -L
 bash ms_conflict_detect.sh
 rc=$?
+exit
 
 cd ../
 rm -rf $tmp
