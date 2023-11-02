@@ -24,6 +24,7 @@ SCRIPT_URL=$5
 PR_OWNER=$6
 PR_ID=$7
 BASE_BRANCH=$8
+USER=$USER
 EOF
 
 . .bashenv
@@ -32,7 +33,7 @@ curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/ms_conflict_detect.sh" -o ms_conf
 curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/azdevops_git_api.sh" -o azdevops_git_api.sh -L
 bash ms_conflict_detect.sh
 rc=$?
-exit
+exit $rc
 
 cd ../
 rm -rf $tmp
