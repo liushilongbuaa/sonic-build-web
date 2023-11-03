@@ -3,7 +3,10 @@
 REPO=$1
 mkdir -p workspace
 cd workspace
-rm -rf $(find . -name "tmp.*" -type d -cmin +600)
+rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -cmin +1440)
+if (( "$(df -h | grep '% /home' | awk '{print$5}' | grep -Eo [0-9]*)" > "60"));then
+    rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -cmin +720)
+fi
 
 mkdir $REPO -p
 cd $REPO
@@ -34,7 +37,4 @@ curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/ms_conflict_detect.sh" -o ms_conf
 curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/azdevops_git_api.sh" -o azdevops_git_api.sh -L
 ./ms_conflict_detect.sh | tee log.log
 rc=${PIPESTATUS[0]}
-
-cd ..
-rm -rf $tmp
 exit $rc
