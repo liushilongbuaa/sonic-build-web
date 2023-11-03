@@ -60,18 +60,22 @@ function init(app) {
             status: InProgress,
         });
         // If it belongs to ms, comment on PR.
-        var result = 'failure'
+        let result = 'failure'
+        let description = '', comment_at = '', mspr = ''
         let run = spawnSync('./conflict_detect.sh', [repo, url, gh_token, msazure_token, script_url, pr_owner, number, base_branch], { encoding: 'utf-8' })
         if (run.status == 254) {
             app.log.info(["[ CONFLICT DETECT ] Conflict detected!", url].join(" "))
+        } else if (run.status == 253){
+            description = `Conflict already exists in ${base_branch}`
+            app.log.error("[ CONFLICT DETECT ] Conflict already exists!")
         } else if (run.status != 0){
+            description = `UnExpected error. Please contact sonicbuildadmin@microsoft.com`
             app.log.error(["[ CONFLICT DETECT ] Unexpected error:", run.status, run.stderr].join(" "))
         } else {
             app.log.info("[ CONFLICT DETECT ] No Conflict or Resolved!")
             result = 'success'
         }
 
-        let description = '', comment_at = '', mspr = ''
         if (run.status == 254){
             for (const line of run.stdout.split(/\r?\n/)){
                 if (line.startsWith("pr_owner: ")){
