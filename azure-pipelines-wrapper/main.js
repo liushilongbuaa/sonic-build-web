@@ -11,7 +11,7 @@ async function startServer() {
         privateKey: privateKey,
         secret: secret,
         }),
-        port: 8080,
+        port: process.env.PORT || '3000',
         webhookPath: process.env.WEBHOOK_PATH,
         webhookProxy: process.env.WEBHOOK_PROXY_URL,
     });
