@@ -68,6 +68,7 @@ function init(app) {
         } else if (run.status == 253){
             description = `Conflict already exists in ${base_branch}`
             app.log.error("[ CONFLICT DETECT ] Conflict already exists!")
+            result = 'success'
         } else if (run.status != 0){
             description = `UnExpected error. Please contact sonicbuildadmin@microsoft.com`
             app.log.error(["[ CONFLICT DETECT ] Unexpected error:", run.status, run.stderr].join(" "))
