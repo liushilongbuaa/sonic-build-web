@@ -70,7 +70,7 @@ function init(app) {
             app.log.error("[ CONFLICT DETECT ] Conflict already exists!")
             result = 'success'
         } else if (run.status != 0){
-            description = `UnExpected error. Please contact sonicbuildadmin@microsoft.com`
+            description = `UnExpected error.<br>Comment '/azpw ms_conflict' to rerun.<br>If failed again, please contact sonicbuildadmin@microsoft.com`
             app.log.error(["[ CONFLICT DETECT ] Unexpected error:", run.status, run.stderr].join(" "))
         } else {
             app.log.info("[ CONFLICT DETECT ] No Conflict or Resolved!")
