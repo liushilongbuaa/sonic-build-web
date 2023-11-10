@@ -19,6 +19,7 @@ function init(app) {
             comment_body = payload.comment.body.trim();
             command = null;
 
+            if (comment_body.toLowerCase().startsWith('/azpw ms_conflict') ){ return };
             console.log(`issue_comment.created, ${payload.comment.id}`);
             if (isDevEnv){
                 if (comment_body.toLowerCase().startsWith('/azpwd comment')){
