@@ -5,18 +5,17 @@ mkdir -p workspace
 cd workspace
 rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -ctime +30)
 if (( "$(df -h | grep '% /home' | awk '{print$5}' | grep -Eo [0-9]*)" > "60"));then
-    rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -ctime +20)
+    rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -ctime +20) 2>/dev/null
 fi
 
-mkdir $REPO -p
-cd $REPO
+mkdir conflict-$REPO -p
+cd conflict-$REPO
 tmp=$(mktemp -p ./ -d)
-
-apt-get update
-apt-get install git -y
-git config --global --add safe.directory '*'
-
 cd $tmp
+
+apt-get update &>> output.log
+apt-get install git -y &>> output.log
+git config --global --add safe.directory '*' &>> output.log
 
 echo "tmp dir: $tmp"
 
@@ -35,7 +34,10 @@ EOF
 
 curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/ms_conflict_detect.sh" -o ms_conflict_detect.sh -L
 curl "https://mssonicbld:$GH_TOKEN@$SCRIPT_URL/azdevops_git_api.sh" -o azdevops_git_api.sh -L
-./ms_conflict_detect.sh 2>error.log | tee log.log
+./ms_conflict_detect.sh 2>error.log | while IFS= read -r line; do echo "[$(date '+%FT%TZ')] $line" >> log.log; done
 rc=${PIPESTATUS[0]}
-[[ "$rc" != 254 && "$rc" != 253 && "$rc" != 0 ]] && echo "Exit Code: $rc" >> error.log
+echo "Exit Code: $rc" >> error.log
+echo "Exit Code: $rc" >> log.log
+sync error.log log.log
+cat log.log
 exit $rc
