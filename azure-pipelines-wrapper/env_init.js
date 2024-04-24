@@ -1,5 +1,5 @@
 const spawnSync = require('child_process').spawnSync;
-const spawnAsync = require('child_process').spawnAsync
+const execFile = require('child_process').execFile;
 
 async function init(app){
     while ( true ){
@@ -17,8 +17,8 @@ async function init(app){
 async function daemon_run(app){
     setInterval(async function() {
         app.log.info("[ DAEMON ] Start to run daemon process")
-        spawnAsync('./env_init_daemon.sh', { encoding: 'utf-8' })
-    }, 30000);
+        execFile('./env_init_daemon.sh', { encoding: 'utf-8' })
+    }, 300000);
 };
 
 module.exports = {
