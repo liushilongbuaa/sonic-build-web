@@ -85,7 +85,7 @@ function init(app) {
             param.push(`ACTION=ALL`)
             check_suite = "ALL"
             check_create(app, context, uuid, owner, repo, commit, MsConflict, "", InProgress, "ms code conflict", InProgress)
-            if (pr_owner == 'liushilongbuaa')  { check_create(app, context, uuid, owner, repo, commit, MsChecker, "", InProgress, "", "") } //TODO remove test line.
+            if (pr_owner == 'liushilongbuaa') { check_create(app, context, uuid, owner, repo, commit, MsChecker, "", InProgress, "", "") } //TODO remove test line.
         }
         app.log.info([`[ CONFLICT DETECT ] [${uuid}]`, url, number, commit, base_branch, pr_owner, check_suite].join(" "))
         param.push(`REPO=${repo}`)
@@ -128,7 +128,7 @@ function init(app) {
         }
         if (run.status == 252 || run.status == 254){
             description = `Please check result in ${mspr}`
-            check_create(app, context, uuid, owner, repo, commit, MsChecker, "", InProgress, "MS PR validation", description)
+            if (pr_owner == 'liushilongbuaa') { check_create(app, context, uuid, owner, repo, commit, MsChecker, "", InProgress, "MS PR validation", description) } //TODO remove test line.
         }
         if (run.status == 0){
             app.log.info(`[ CONFLICT DETECT ] [${uuid}] Check passed! check_suite ${check_suite}`)
@@ -136,7 +136,7 @@ function init(app) {
                 check_create(app, context, uuid, owner, repo, commit, MsConflict, SUCCESS, COMPLETED, "MS conflict detect", mspr)
             }
             if ( ['ALL',MsChecker].includes(check_suite) ) {
-                check_create(app, context, uuid, owner, repo, commit, MsChecker, SUCCESS, COMPLETED, "MS PR validation", mspr)
+                if (pr_owner == 'liushilongbuaa') { check_create(app, context, uuid, owner, repo, commit, MsChecker, SUCCESS, COMPLETED, "MS PR validation", mspr) } //TODO remove test line.
             }
         }
         if ( ! [0, 254, 253, 252].includes(run.status) ){
