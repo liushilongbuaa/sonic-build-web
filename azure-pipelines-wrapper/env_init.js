@@ -20,8 +20,10 @@ async function daemon_run(app){
         lockfile.lock('env_init_daemon.log')
         .then((release) => {
             app.log.info("[ DAEMON ] Start to run daemon process")
-            execFile('./env_init_daemon.sh', { encoding: 'utf-8' })
-            return release();
+            execFile('./env_init_daemon.sh', { encoding: 'utf-8' }, (error)=>{
+                app.log.info(error)
+                release()
+            })
         })
         .catch((e) => {
             // either lock could not be acquired
