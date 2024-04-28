@@ -147,7 +147,7 @@ function init(app) {
                 app.log.info([`[ CONFLICT DETECT ] [${uuid}] Unknown error liushilongbuaa need to check!`, url].join(" "))
                 description = `@liushilongbuaa Please help check!`
             } else {
-                pp.log.info([`[ CONFLICT DETECT ] [${uuid}] Exit: 0`, url].join(" "))
+                app.log.info([`[ CONFLICT DETECT ] [${uuid}] Exit: 0`, url].join(" "))
                 description = SUCCESS
             }
             check_create(app, context, uuid, owner, repo, commit, MsConflict, ms_conflict_result, COMPLETED, "MS conflict detect", description)
