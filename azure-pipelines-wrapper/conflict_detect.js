@@ -25,7 +25,7 @@ async function check_create(app, context, uuid, owner, repo, commit, check_name,
     if ( result != null ){ param.conclusion = result }
     app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create`, result, status, output_title, output_summary].join(" "))
     let check = await context.octokit.rest.checks.create(param);
-    if (check.status/10 != 20){
+    if (check.status/10 >= 30 || check.status/10 < 20){
         app.log.error([`[ CONFLICT DETECT ] [${uuid}] check_create`, util.inspect(check, {depth: null})].join(" "))
     } else {
         app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create`, check.status].join(" "))
@@ -101,6 +101,7 @@ function init(app) {
             if (pr_owner == 'liushilongbuaa') { check_create(app, context, uuid, owner, repo, commit, MsChecker, null, InProgress, "ms PR checker", InProgress) } //TODO remove test line.
         }
         app.log.info([`[ CONFLICT DETECT ] [${uuid}]`, url, number, commit, base_branch, pr_owner, check_suite].join(" "))
+        param.push(`UUID=${uuid}`)
         param.push(`REPO=${repo}`)
         param.push(`GH_TOKEN=${gh_token}`)
         param.push(`MSAZURE_TOKEN=${msazure_token}`)
