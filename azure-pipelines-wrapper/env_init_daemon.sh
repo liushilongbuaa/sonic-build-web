@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-echo "daemon script start!" >> env_init_daemon.log
+echo "$(date '+%FT%TZ'): daemon script start!" >> env_init_daemon.log
 cd workspace
 find . -maxdepth 2 -name "tmp.*" -type d -ctime +30 -delete
 

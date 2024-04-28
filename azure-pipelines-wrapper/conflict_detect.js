@@ -10,19 +10,20 @@ const FAILURE = 'failure'
 const SUCCESS = 'success'
 
 async function check_create(app, context, uuid, owner, repo, commit, check_name, result, status, output_title, output_summary){
-    let check = await context.octokit.rest.checks.create({
+    param={
         owner: owner,
         repo: repo,
         head_sha: commit,
         name: check_name,
-        conclusion: result,
         status: status,
         output: {
             title: output_title,
             summary: output_summary,
         },
-    });
-    app.log.info([`[ CONFLICT DETECT ] [${uuid}]`, check.status, check.body].join(" "))
+    }
+    if ( result != null ){ param.conclusion = result }
+    let check = await context.octokit.rest.checks.create(param);
+    app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create `, check.status, check.body].join(" "))
 }
 
 function init(app) {
@@ -65,6 +66,11 @@ function init(app) {
             pr_owner = pr.data.head.user.login
             if (comment_body.startsWith(`/azpw ${MsConflict}`)) {
                 check_suite = MsConflict
+                if (comment_body.includes(" -f ") || comment_body.endsWith(" -f")){
+                    param.push("FORCE_PUSH=true")
+                } else {
+                    param.push("FORCE_PUSH=false")
+                }
             } else if (comment_body.startsWith(`/azpw ${MsChecker}`)) {
                 check_suite = MsChecker
                 if (pr_owner != 'liushilongbuaa'){ return }; //TODO remove test line.
@@ -72,7 +78,7 @@ function init(app) {
                 app.log.info(`[ CONFLICT DETECT ] [${uuid}] comment: ${comment_body}, exit!`)
                 return
             }
-            check_create(app, context, uuid, owner, repo, commit, check_suite, "", InProgress, check_suite, InProgress)
+            check_create(app, context, uuid, owner, repo, commit, check_suite, null, InProgress, check_suite, InProgress)
             comment_body=comment_body.replace('/azpw ', '')
             param.push(`ACTION="${comment_body}"`)
         } else {
@@ -82,10 +88,11 @@ function init(app) {
             commit = payload.pull_request.head.sha
             base_branch = payload.pull_request.base.ref
             pr_owner = payload.pull_request.user.login
+            param.push("FORCE_PUSH=true")
             param.push(`ACTION=ALL`)
             check_suite = "ALL"
-            check_create(app, context, uuid, owner, repo, commit, MsConflict, "", InProgress, "ms code conflict", InProgress)
-            if (pr_owner == 'liushilongbuaa') { check_create(app, context, uuid, owner, repo, commit, MsChecker, "", InProgress, "", "") } //TODO remove test line.
+            check_create(app, context, uuid, owner, repo, commit, MsConflict, null, InProgress, "ms code conflict", InProgress)
+            if (pr_owner == 'liushilongbuaa') { check_create(app, context, uuid, owner, repo, commit, MsChecker, null, InProgress, "ms PR checker", InProgress) } //TODO remove test line.
         }
         app.log.info([`[ CONFLICT DETECT ] [${uuid}]`, url, number, commit, base_branch, pr_owner, check_suite].join(" "))
         param.push(`REPO=${repo}`)
@@ -99,7 +106,7 @@ function init(app) {
         param.push(`PR_BASE_BRANCH=${base_branch}`)
 
         // If it belongs to ms, comment on PR.
-        var description = '', comment_at = '', mspr = '', tmp = ''
+        var description = '', comment_at = '', mspr = '', tmp = '', ms_conflict_result = '', ms_checker_result = ''
         var run = spawnSync('./conflict_detect.sh', param, { encoding: 'utf-8' })
         for (const line of run.stdout.split(/\r?\n/)){
             if (line.includes("pr_owner: ")){
@@ -114,30 +121,36 @@ function init(app) {
             if (line.includes("tmp dir: ")){
                 tmp = line.split(' ').pop()
             }
+            if (line.includes("ms_conflict.result: ")){
+                ms_conflict_result = line.split(' ').pop()
+            }
+            if (line.includes("ms_checker.result: ")){
+                ms_checker_result = line.split(' ').pop()
+            }
         }
         app.log.info(`[ CONFLICT DETECT ] [${uuid}] ${mspr}, ${tmp}`)
-
-        if (run.status == 254) {
-            app.log.info([`[ CONFLICT DETECT ] [${uuid}] Conflict detected!`, url].join(" "))
-            description = `@${comment_at} PR: ${url} is conflict with MS internal repo<br>${mspr}<br>Please push fix commit to sonicbld/precheck/head/${number}<br>Then approve PR and comment "/azpw ms_conflict" in github PR.`
-            check_create(app, context, uuid, owner, repo, commit, MsConflict, FAILURE, COMPLETED, "Code conflict with ms repo!", description)
+        if ( ['ALL',MsConflict].includes(check_suite) ) {
+            if (run.status == 254) {
+                app.log.info([`[ CONFLICT DETECT ] [${uuid}] Conflict detected!`, url].join(" "))
+                description = `@${comment_at} PR: ${url} is conflict with MS internal repo<br>${mspr}<br>Please push fix commit to sonicbld/precheck/head/${number}<br>Then approve PR and comment "/azpw ms_conflict" in github PR.`
+            } else if (run.status == 253){
+                app.log.info([`[ CONFLICT DETECT ] [${uuid}] Conflict already exists!`, url].join(" "))
+                description = `@${comment_at} Conflict already exists in ${base_branch}<br>Please wait a few hours to run ms_conflict again!`
+            } else {
+                app.log.info([`[ CONFLICT DETECT ] [${uuid}] Unknown error liushilongbuaa need to check!`, url].join(" "))
+                description = `@liushilongbuaa Please help check!`
+            }
+            check_create(app, context, uuid, owner, repo, commit, MsConflict, ms_conflict_result, COMPLETED, "MS conflict detect", description)
         }
-        if (run.status == 253){
-            description = `@${comment_at} Conflict already exists in ${base_branch}<br>Please wait a few hours to run ms_conflict again!`
-            check_create(app, context, uuid, owner, repo, commit, MsConflict, FAILURE, COMPLETED, "Please wait a few hours and run again.", description)
-        }
-        if (run.status == 252 || run.status == 254){
+        if ( ['ALL',MsChecker].includes(check_suite) ) {
             description = `Please check result in ${mspr}`
-            if (pr_owner == 'liushilongbuaa') { check_create(app, context, uuid, owner, repo, commit, MsChecker, "", InProgress, "MS PR validation", description) } //TODO remove test line.
-        }
-        if (run.status == 0){
-            app.log.info(`[ CONFLICT DETECT ] [${uuid}] Check passed! check_suite ${check_suite}`)
-            if ( ['ALL',MsConflict].includes(check_suite) ) {
-                check_create(app, context, uuid, owner, repo, commit, MsConflict, SUCCESS, COMPLETED, "MS conflict detect", mspr)
-            }
-            if ( ['ALL',MsChecker].includes(check_suite) ) {
-                if (pr_owner == 'liushilongbuaa') { check_create(app, context, uuid, owner, repo, commit, MsChecker, SUCCESS, COMPLETED, "MS PR validation", mspr) } //TODO remove test line.
-            }
+            if (pr_owner == 'liushilongbuaa') {
+                if (ms_checker_result == InProgress){
+                    check_create(app, context, uuid, owner, repo, commit, MsChecker, null, InProgress, "MS PR validation", description)
+                } else {
+                    check_create(app, context, uuid, owner, repo, commit, MsChecker, ms_checker_result, COMPLETED, "MS PR validation", description)
+                }
+            } //TODO remove test line.
         }
         if ( ! [0, 254, 253, 252].includes(run.status) ){
             app.log.error(`[ CONFLICT DETECT ] [${uuid}] Exit Code: ${run.status}`)
