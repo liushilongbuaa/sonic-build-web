@@ -1,5 +1,6 @@
 const spawnSync = require('child_process').spawnSync;
 const { Octokit } = require('@octokit/rest');
+const util = require('util');
 const akv = require('./keyvault');
 const InProgress = 'in_progress'
 const MsConflict = 'ms_conflict'
@@ -22,8 +23,9 @@ async function check_create(app, context, uuid, owner, repo, commit, check_name,
         },
     }
     if ( result != null ){ param.conclusion = result }
+    app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create`, util.inspect(param, {depth: null})].join(" "))
     let check = await context.octokit.rest.checks.create(param);
-    app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create `, check.status, check.body].join(" "))
+    app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create`, util.inspect(check, {depth: null})].join(" "))
 }
 
 function init(app) {
@@ -136,9 +138,15 @@ function init(app) {
             } else if (run.status == 253){
                 app.log.info([`[ CONFLICT DETECT ] [${uuid}] Conflict already exists!`, url].join(" "))
                 description = `@${comment_at} Conflict already exists in ${base_branch}<br>Please wait a few hours to run ms_conflict again!`
-            } else {
+            } else if (run.status == 252){
+                app.log.info([`[ CONFLICT DETECT ] [${uuid}] Github Branch Error!`, url].join(" "))
+                description = `@${comment_at} Github Branch not ready<br>Please wait a few minutes to run again!`
+            } else if (run.status != 0){
                 app.log.info([`[ CONFLICT DETECT ] [${uuid}] Unknown error liushilongbuaa need to check!`, url].join(" "))
                 description = `@liushilongbuaa Please help check!`
+            } else {
+                pp.log.info([`[ CONFLICT DETECT ] [${uuid}] Exit: 0`, url].join(" "))
+                description = SUCCESS
             }
             check_create(app, context, uuid, owner, repo, commit, MsConflict, ms_conflict_result, COMPLETED, "MS conflict detect", description)
         }
