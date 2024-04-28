@@ -84,7 +84,6 @@ function init(app) {
                 app.log.info(`[ CONFLICT DETECT ] [${uuid}] comment: ${comment_body}, exit!`)
                 return
             }
-            check_create(app, context, uuid, owner, repo, commit, check_suite, null, InProgress, check_suite, InProgress)
             comment_body=comment_body.replace('/azpw ', '')
             param.push(`ACTION="${comment_body}"`)
         } else {
@@ -97,8 +96,6 @@ function init(app) {
             param.push("FORCE_PUSH=true")
             param.push(`ACTION=ALL`)
             check_suite = "ALL"
-            check_create(app, context, uuid, owner, repo, commit, MsConflict, null, InProgress, "ms code conflict", InProgress)
-            if (pr_owner == 'liushilongbuaa') { check_create(app, context, uuid, owner, repo, commit, MsChecker, null, InProgress, "ms PR checker", InProgress) } //TODO remove test line.
         }
         app.log.info([`[ CONFLICT DETECT ] [${uuid}]`, url, number, commit, base_branch, pr_owner, check_suite].join(" "))
         param.push(`UUID=${uuid}`)
