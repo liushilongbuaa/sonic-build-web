@@ -23,9 +23,13 @@ async function check_create(app, context, uuid, owner, repo, commit, check_name,
         },
     }
     if ( result != null ){ param.conclusion = result }
-    app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create`, util.inspect(param, {depth: null})].join(" "))
+    app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create`, result, status, output_title, output_summary].join(" "))
     let check = await context.octokit.rest.checks.create(param);
-    app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create`, util.inspect(check, {depth: null})].join(" "))
+    if (check.status/10 != 20){
+        app.log.error([`[ CONFLICT DETECT ] [${uuid}] check_create`, util.inspect(check, {depth: null})].join(" "))
+    } else {
+        app.log.info([`[ CONFLICT DETECT ] [${uuid}] check_create`, check.status].join(" "))
+    }
 }
 
 function init(app) {
