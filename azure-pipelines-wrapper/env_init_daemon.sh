@@ -21,9 +21,11 @@ for i in $(cat todo.list); do
     cd $i
     echo ACTION=ms_checker >> .bashenv
     . .bashenv
-    ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" | while IFS= read -r line; do echo "[$(date '+%FT%TZ')] $line"; done > tmp
-    cat tmp
+    ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" | while IFS= read -r line; do echo "[$(date '+%FT%TZ')] $line"; done
+    cd ..
+    rm $i
     echo $i >> done.list
     sleep 2
 done
+rm todo.list -rf
 sleep 60
