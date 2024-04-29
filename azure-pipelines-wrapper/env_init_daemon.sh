@@ -25,3 +25,4 @@ for i in $(cat todo.list); do
     echo $i >> done.list
     sleep 2
 done
+sleep 60

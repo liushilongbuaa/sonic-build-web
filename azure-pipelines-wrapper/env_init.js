@@ -23,6 +23,7 @@ async function daemon_run(app){
             fs.mkdirSync('daemon_lock')
         } catch(e) {
             if(e.code == 'EEXIST') {
+                app.log.info("[ DAEMON ] return!");
                 return
             }
             throw(e)
