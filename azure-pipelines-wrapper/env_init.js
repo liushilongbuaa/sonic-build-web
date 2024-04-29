@@ -50,8 +50,8 @@ async function daemon_run(app){
                     }
                 }
             }
+            fs.rmdirSync("daemon_lock");
         })
-        fs.rmdirSync("daemon_lock");
     }, 30000);
 };
 
