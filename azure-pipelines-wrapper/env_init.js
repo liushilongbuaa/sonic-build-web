@@ -39,7 +39,7 @@ async function daemon_run(app){
         })
         let data = await appclinet.octokit.request("/app");
         app.log.info(["[ DAEMON ] START!", data.data.name].join(" "));
-        execFile('./env_init_daemon.sh', { encoding: 'utf-8' }, (error, stdout)=>{
+        execFile('./env_init_daemon.sh', ["&>> env_init_daemon.log"], { encoding: 'utf-8' }, (error, stdout)=>{
             for (const line of stdout.split(/\r?\n/)){
                 if (line.includes("ms_conflict.result: ")){
                     let pr_result = line.split(' ').pop()

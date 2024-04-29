@@ -1,11 +1,11 @@
 #!/bin/bash -ex
 
-echo "$(date '+%FT%TZ'): daemon script start!" &>> env_init_daemon.log
+echo "$(date '+%FT%TZ'): daemon script start!"
 cd workspace
-find . -maxdepth 2 -name "tmp.*" -type d -ctime +30 -delete &>> env_init_daemon.log || true
+find . -maxdepth 2 -name "tmp.*" -type d -ctime +30 -delete || true
 
 if (( "$(df -h | grep '% /home' | awk '{print$5}' | grep -Eo [0-9]*)" > "60"));then
-    find . -maxdepth 2 -name "tmp.*" -type d -ctime +20 -delete &>> env_init_daemon.log || true
+    find . -maxdepth 2 -name "tmp.*" -type d -ctime +20 -delete || true
 fi
 
 cd conflict-sonic-buildimage
