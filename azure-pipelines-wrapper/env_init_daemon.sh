@@ -2,10 +2,10 @@
 
 echo "$(date '+%FT%TZ'): daemon script start!"
 cd workspace
-find . -maxdepth 2 -name "tmp.*" -type d -ctime +30 -delete || true
+rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -ctime +30)
 
 if (( "$(df -h | grep '% /home' | awk '{print$5}' | grep -Eo [0-9]*)" > "60"));then
-    find . -maxdepth 2 -name "tmp.*" -type d -ctime +20 -delete || true
+    rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -ctime +20)
 fi
 
 cd conflict-sonic-buildimage
