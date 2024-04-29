@@ -1,3 +1,4 @@
+const spawnSync = require('child_process').spawnSync;
 const execFile = require('child_process').execFile;
 const akv = require('./keyvault.js');
 const { App, createNodeMiddleware } = require("@octokit/app");
