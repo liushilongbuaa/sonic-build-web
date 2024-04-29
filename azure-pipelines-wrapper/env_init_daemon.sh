@@ -23,7 +23,7 @@ for i in $(cat todo.list); do
     . .bashenv
     ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" | while IFS= read -r line; do echo "[$(date '+%FT%TZ')] $line"; done
     cd ..
-    rm $i
+    rm $i -rf
     echo $i >> done.list
     sleep 2
 done
