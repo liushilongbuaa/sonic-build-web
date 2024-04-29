@@ -20,7 +20,7 @@ for i in $(cat todo.list); do
     cp ../$i/.bashenv ../$i/script.sh $i/
     cd $i
     echo ACTION=ms_checker >> .bashenv
-    ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" | while IFS= read -r line; do echo "[$(date '+%FT%TZ')] $line" > tmp; done
+    ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" | while IFS= read -r line; do echo "[$(date '+%FT%TZ')] $line"; done > tmp
     cat tmp
     echo $i >> done.list
     sleep 2
