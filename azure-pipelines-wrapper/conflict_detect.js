@@ -119,7 +119,7 @@ function init(app) {
             if (line.includes("ms_pr: ") && mspr == ''){
                 mspr = line.split(' ').pop()
             }
-            if (line.includes("ms_pr_new: ")){
+            if (line.includes("ms_pr_new: ") && ! line.endsWith('null') ){
                 mspr = line.split(' ').pop()
             }
             if (line.includes("tmp dir: ")){

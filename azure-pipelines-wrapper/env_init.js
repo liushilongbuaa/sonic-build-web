@@ -39,7 +39,7 @@ async function daemon_run(app){
         })
         let data = await appclinet.octokit.request("/app");
         app.log.info(["[ DAEMON ] START!", data.data.name].join(" "));
-        execFile('./env_init_daemon.sh', ["&>> env_init_daemon.log"], { encoding: 'utf-8' }, (error, stdout, stderr)=>{
+        execFile('./env_init_daemon.sh', { encoding: 'utf-8' }, (error, stdout, stderr)=>{
             app.log.info(["[ DAEMON ] ",error].join(" "));
             app.log.info(["[ DAEMON ] ",stdout].join(" "));
             app.log.info(["[ DAEMON ] ",stderr].join(" "));
