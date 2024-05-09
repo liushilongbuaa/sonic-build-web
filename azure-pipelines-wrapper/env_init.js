@@ -23,10 +23,17 @@ async function daemon_run(app){
             fs.mkdirSync('daemon_lock')
         } catch(e) {
             if(e.code == 'EEXIST') {
-                app.log.info("[ DAEMON ] return!");
-                return
+                let lock = fs.statSync('daemon_lock').ctimeMs
+                let now = Date.now()
+                if (now - lock > 36000){
+                    app.log.info("[ DAEMON ] lock more than 10 hours! go on.");
+                } else {
+                    app.log.info("[ DAEMON ] return!");
+                    return
+                }
+            } else {
+                throw(e)
             }
-            throw(e)
         }
         const privateKey = await akv.getAppPrivateKey();
         const secret = await akv.getAppWebhookSecret();
@@ -39,24 +46,22 @@ async function daemon_run(app){
         })
         let data = await appclinet.octokit.request("/app");
         app.log.info(["[ DAEMON ] START!", data.data.name].join(" "));
-        execFile('bash', ['-c', 'env_init_daemon.sh | while IFS= read -r line; do echo [$(date +%FT%TZ)] $line &>> env_init_daemon.log; done'], { encoding: 'utf-8' }, (error, stdout, stderr)=>{
-            app.log.info(["[ DAEMON ] error:", error].join(" "));
-            app.log.info(["[ DAEMON ] stdout:", stdout].join(" "));
-            app.log.info(["[ DAEMON ] stderr:", stderr].join(" "));
+        execFile('bash', ['-c', 'env_init_daemon.sh 2>&1 | while IFS= read -r line; do echo [$(date +%FT%TZ)] $line | tee -a env_init_daemon.log; done'], { encoding: 'utf-8' }, (error, stdout, stderr)=>{
             for (const line of stdout.split(/\r?\n/)){
                 if (line.includes("ms_conflict.result: ")){
                     let pr_result = line.split(' ').pop()
                     if (pr_result.split('=').length == 2){
                         let pr = pr_result.split('=')[0]
                         let result = pr_result.split('=')[1]
-                        app.log.info(["[ DAEMON ]", pr, result].join(" "));
+                        app.log.info(["[ DAEMON ] Result:", pr, result].join(" "));
+                        break
                     }
                 }
             }
             app.log.info("[ DAEMON ] END!");
             fs.rmdirSync("daemon_lock");
         })
-    }, 30000);
+    }, 300000);
 };
 
 module.exports = {
