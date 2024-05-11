@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 echo "$(date '+%FT%TZ') daemon script start!"
-cd site/wwwroot/workspace
+cd workspace
 rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -ctime +30)
 
 if (( "$(df -h | grep '% /home' | awk '{print$5}' | grep -Eo [0-9]*)" > "60"));then
