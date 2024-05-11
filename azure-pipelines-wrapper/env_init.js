@@ -46,7 +46,7 @@ async function daemon_run(app){
         })
         let data = await appclinet.octokit.request("/app");
         app.log.info(["[ DAEMON ] START!", data.data.name].join(" "));
-        execFile('bash', ['-c', 'env_init_daemon.sh 2>&1 | while IFS= read -r line; do echo [$(date +%FT%TZ)] $line | tee -a env_init_daemon.log; done'], { cwd: process.env.PWD, uid: 0, encoding: 'utf-8' }, (error, stdout, stderr)=>{
+        execFile('bash', ['-c', 'env_init_daemon.sh 2>&1 | while IFS= read -r line; do echo [$(date +%FT%TZ)] $line | tee -a env_init_daemon.log; done'], { uid: 0, encoding: 'utf-8' }, (error, stdout, stderr)=>{
             for (const line of stdout.split(/\r?\n/)){
                 if (line.includes("ms_checker.result: ")){
                     let pr_result = line.split(' ').pop()
@@ -60,7 +60,7 @@ async function daemon_run(app){
             app.log.info("[ DAEMON ] END!");
             fs.rmdirSync("daemon_lock");
         })
-    }, 12* 3600 * 1000);
+    }, 1* 3600 * 1000);
 };
 
 module.exports = {

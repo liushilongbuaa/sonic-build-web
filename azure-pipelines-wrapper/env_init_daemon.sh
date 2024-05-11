@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 echo "$(date '+%FT%TZ') daemon script start!"
-cd workspace
+cd site/wwwroot/workspace
 rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -ctime +30)
 
 if (( "$(df -h | grep '% /home' | awk '{print$5}' | grep -Eo [0-9]*)" > "60"));then
@@ -25,8 +25,8 @@ if [ -n "$folders" ]; then
     todolist=$(cat todo.list)
     if [ -n "$todolist" ]; then
         for i in $todolist; do
-            echo "$(date '+%FT%TZ') FORCE_PUSH: $(grep -Eo FORCE_PUSH=.* ../$i/.bashenv)"
             grep FORCE_PUSH=true ../$i/.bashenv || continue
+            echo "$(date '+%FT%TZ') FORCE_PUSH: $i $(grep -Eo FORCE_PUSH=.* ../$i/.bashenv)"
             mkdir $i || continue
             cp ../$i/.bashenv ../$i/script.sh $i/
             cd $i
@@ -34,11 +34,12 @@ if [ -n "$folders" ]; then
             . .bashenv
             ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/"
             cd ..
-            #rm $i -rf
             echo $i >> done.list
             sleep 2
         done
     fi
-    rm todo.list -rf
+    cd ..
+    rm -rf daemon.back
+    mv daemon daemon.back
     sleep 300
 fi
