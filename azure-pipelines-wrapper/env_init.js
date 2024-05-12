@@ -26,7 +26,9 @@ async function daemon_run(app){
                 let lock = fs.statSync('daemon_lock').ctimeMs
                 let now = Date.now()
                 if (now - lock > 36000){
-                    app.log.info("[ DAEMON ] lock more than 10 hours! go on.");
+                    app.log.info("[ DAEMON ] lock more than 1 hours! release lock.");
+                    fs.rmdirSync("daemon_lock");
+                    return
                 } else {
                     app.log.info("[ DAEMON ] return!");
                     return
@@ -58,7 +60,6 @@ async function daemon_run(app){
                 }
             }
             app.log.info("[ DAEMON ] END!");
-            fs.rmdirSync("daemon_lock");
         })
     }, 1* 3600 * 1000);
 };
