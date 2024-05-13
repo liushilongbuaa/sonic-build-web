@@ -11,6 +11,10 @@ const FAILURE = 'failure'
 const SUCCESS = 'success'
 
 async function check_create(app, context, uuid, owner, repo, commit, check_name, result, status, output_title, output_summary){
+    if (result == '') {
+        app.log.info(`[ CONFLICT DETECT ] [${uuid}] check_create: result=BLANK`)
+        return
+    }
     param={
         owner: owner,
         repo: repo,
@@ -108,6 +112,7 @@ function init(app) {
         param.push(`PR_URL=${url}`)
         param.push(`PR_OWNER=${pr_owner}`)
         param.push(`PR_BASE_BRANCH=${base_branch}`)
+        param.push(`PR_HEAD_COMMIT=${commit}`)
 
         // If it belongs to ms, comment on PR.
         var description = '', comment_at = '', mspr = '', tmp = '', ms_conflict_result = '', ms_checker_result = ''

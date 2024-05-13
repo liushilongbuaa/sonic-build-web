@@ -6,6 +6,8 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const MsChecker = 'ms_checker'
 const InProgress = 'in_progress'
+const COMPLETED = 'completed'
+const PRPrefix = 'https://dev.azure.com/msazure/One/_git/Networking-acs-buildimage/pullrequest/'
 
 async function init(app){
     while ( true ){
@@ -54,29 +56,31 @@ async function daemon_run(app){
         app.log.info(`[ DAEMON ] [${uuid}] START ${data.data.name}!`);
         execFile('bash', ['-c', `env_init_daemon.sh 2>&1 >> env_init_daemon.stdout | while IFS= read -r line; do echo [$(date +%FT%TZ)] [${uuid}] $line >> env_init_daemon.stderr; done; cat env_init_daemon.stdout`], { uid: 0, encoding: 'utf-8' }, (error, stdout, stderr)=>{
             for (const line of stdout.split(/\r?\n/)){
-                if (line.includes("ms_checker.result: ")){
-                    let pr_result = line.split(' ').pop()
-                    if (pr_result.split('=').length == 2){
-                        let pr = pr_result.split('=')[0]
-                        let result = pr_result.split('=')[1]
-                        app.log.info(`[ DAEMON ] [${uuid}] Result: ${pr} ${result}`);
-                        if (pr == 18904){
+                if (line.includes("ms_checker.detail: ")){
+                    let detail = line.split(' ').pop()
+                    if (detail.split(',').length == 3){
+                        let result = detail.split(',')[0]
+                        let commit = detail.split(',')[1]
+                        let prid = detail.split(',')[2]
+                        app.log.info(`[ DAEMON ] [${uuid}] Result: ${PRPrefix}${prid} ${result} ${commit}`);
+                        if (prid == 18904){
                             param={
                                 owner: 'sonic-net',
                                 repo: 'sonic-buildimage',
-                                head_sha: 'eeffe6613e7a4d86923679ed158892554565904e',
+                                head_sha: commit,
                                 name: MsChecker,
                                 output: {
                                     title: "MS PR validation",
-                                    summary: `Please check result in ${pr}`,
+                                    summary: `Please check result in ${PRPrefix}${prid}`,
                                 },
                             }
                             if ( result == InProgress ) {
                                 param.status = result
                             } else {
                                 param.conclusion = result
+                                param.status = COMPLETED
                             }
-                            app.log.info([`[ DAEMON ] [${uuid}] check_create`, result, output_title, output_summary].join(" "))
+                            app.log.info(`[ DAEMON ] [${uuid}] check_create ${PRPrefix}${prid} ${result}`)
                             appclinet.octokit.rest.checks.create(param);
                         }
                     }
