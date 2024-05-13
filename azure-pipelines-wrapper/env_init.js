@@ -25,7 +25,7 @@ async function daemon_run(app){
             if(e.code == 'EEXIST') {
                 let lock = fs.statSync('daemon_lock').ctimeMs
                 let now = Date.now()
-                if (now - lock > 36000){
+                if (now - lock > 1800 * 1000){
                     app.log.info("[ DAEMON ] lock more than 1 hours! release lock.");
                     fs.rmdirSync("daemon_lock");
                     return
