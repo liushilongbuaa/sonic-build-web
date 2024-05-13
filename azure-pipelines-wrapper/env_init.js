@@ -3,6 +3,9 @@ const execFile = require('child_process').execFile;
 const akv = require('./keyvault.js');
 const { App, createNodeMiddleware } = require("@octokit/app");
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
+const MsChecker = 'ms_checker'
+const InProgress = 'in_progress'
 
 async function init(app){
     while ( true ){
@@ -19,18 +22,19 @@ async function init(app){
 
 async function daemon_run(app){
     setInterval(async function() {
+        const uuid = uuidv4();
         try {
             fs.mkdirSync('daemon_lock')
         } catch(e) {
             if(e.code == 'EEXIST') {
                 let lock = fs.statSync('daemon_lock').ctimeMs
                 let now = Date.now()
-                if (now - lock > 1800 * 1000){
-                    app.log.info("[ DAEMON ] lock more than 1 hours! release lock.");
+                if (now - lock > 25 * 60 * 1000){
+                    app.log.info(`[ DAEMON ] [${uuid}] lock more than 30 minutes. release lock!`);
                     fs.rmdirSync("daemon_lock");
                     return
                 } else {
-                    app.log.info("[ DAEMON ] return!");
+                    app.log.info(`[ DAEMON ] [${uuid}] daemon process return!`);
                     return
                 }
             } else {
@@ -47,21 +51,40 @@ async function daemon_run(app){
             },
         })
         let data = await appclinet.octokit.request("/app");
-        app.log.info(["[ DAEMON ] START!", data.data.name].join(" "));
-        execFile('bash', ['-c', 'env_init_daemon.sh 2>&1 | while IFS= read -r line; do echo [$(date +%FT%TZ)] $line | tee -a env_init_daemon.log; done'], { uid: 0, encoding: 'utf-8' }, (error, stdout, stderr)=>{
+        app.log.info(`[ DAEMON ] [${uuid}] START ${data.data.name}!`);
+        execFile('bash', ['-c', `env_init_daemon.sh 2>&1 >> env_init_daemon.stdout | while IFS= read -r line; do echo [$(date +%FT%TZ)] [${uuid}] $line >> env_init_daemon.stderr; done; cat env_init_daemon.stdout`], { uid: 0, encoding: 'utf-8' }, (error, stdout, stderr)=>{
             for (const line of stdout.split(/\r?\n/)){
                 if (line.includes("ms_checker.result: ")){
                     let pr_result = line.split(' ').pop()
                     if (pr_result.split('=').length == 2){
                         let pr = pr_result.split('=')[0]
                         let result = pr_result.split('=')[1]
-                        app.log.info(["[ DAEMON ] Result:", pr, result].join(" "));
+                        app.log.info(`[ DAEMON ] [${uuid}] Result: ${pr} ${result}`);
+                        if (pr == 18904){
+                            param={
+                                owner: 'sonic-net',
+                                repo: 'sonic-buildimage',
+                                head_sha: 'eeffe6613e7a4d86923679ed158892554565904e',
+                                name: MsChecker,
+                                output: {
+                                    title: "MS PR validation",
+                                    summary: `Please check result in ${pr}`,
+                                },
+                            }
+                            if ( result == InProgress ) {
+                                param.status = result
+                            } else {
+                                param.conclusion = result
+                            }
+                            app.log.info([`[ DAEMON ] [${uuid}] check_create`, result, output_title, output_summary].join(" "))
+                            appclinet.octokit.rest.checks.create(param);
+                        }
                     }
                 }
             }
-            app.log.info("[ DAEMON ] END!");
+            app.log.info(`[ DAEMON ] [${uuid}] END!`);
         })
-    }, 1* 3600 * 1000);
+    }, 30 * 60 * 1000);
 };
 
 module.exports = {

@@ -12,7 +12,8 @@ cd conflict-sonic-buildimage
 mkdir -p daemon
 touch daemon/done.list
 
-folders=$(find . -maxdepth 2 -name .bashenv -mtime -1 -mmin +120)
+#folders=$(find . -maxdepth 2 -name .bashenv -mtime -1 -mmin +120)
+folders=$(find . -maxdepth 2 -name .bashenv -mtime -6 -mtime +4)
 echo "$(date '+%FT%TZ') folders: $folders"
 if [ -n "$folders" ]; then
     grep PR_NUMBER $folders | awk -F/.bashenv:PR_NUMBER= '{print$1,$2}' | sort -k 2 -u
