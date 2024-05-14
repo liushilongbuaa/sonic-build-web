@@ -141,13 +141,13 @@ function init(app) {
         if ( ['ALL',MsConflict].includes(check_suite) ) {
             if (run.status == 254) {
                 app.log.info([`[ CONFLICT DETECT ] [${uuid}] Conflict detected!`, url].join(" "))
-                description = `@${comment_at} PR: ${url} is conflict with MS internal repo<br>${mspr}<br>Please push fix commit to sonicbld/precheck/head/${number}<br>Then approve PR and comment "/azpw ms_conflict" in github PR.`
+                description = `@${comment_at} PR: ${url} is conflict with MS internal repo<br>${mspr}<br>Please push fix commit to sonicbld/precheck/head/${number}<br>Then approve PR and comment "/azpw ${MsConflict}" in github PR.`
             } else if (run.status == 253){
                 app.log.info([`[ CONFLICT DETECT ] [${uuid}] Conflict already exists!`, url].join(" "))
-                description = `@${comment_at} Conflict already exists in ${base_branch}<br>Please wait a few hours to run ms_conflict again!`
+                description = `@${comment_at} Conflict already exists in ${base_branch}<br>Please wait a few hours to run ms_conflict again!<br>'/azpw ${MsConflict}'`
             } else if (run.status == 252){
                 app.log.info([`[ CONFLICT DETECT ] [${uuid}] Github Branch Error!`, url].join(" "))
-                description = `@${comment_at} Github Branch not ready<br>Please wait a few minutes to run again!`
+                description = `@${comment_at} Github Branch not ready<br>Please wait a few minutes to run again!<br>'/azpw ${MsConflict}'`
             } else if (run.status != 0){
                 app.log.info([`[ CONFLICT DETECT ] [${uuid}] Unknown error liushilongbuaa need to check!`, url].join(" "))
                 description = `@liushilongbuaa Please help check!`
