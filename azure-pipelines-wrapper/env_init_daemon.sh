@@ -39,8 +39,4 @@ if [ -n "$folders" ]; then
             sleep 2
         done
     fi
-    cd ..
-    rm -rf daemon.back
-    mv daemon daemon.back
-    sleep 300
 fi
