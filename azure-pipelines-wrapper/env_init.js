@@ -54,6 +54,7 @@ async function daemon_run(app){
         })
         let data = await appclinet.octokit.request("/app");
         app.log.info(`[ DAEMON ] [${uuid}] START ${data.data.name}!`);
+        let oct = await appclinet.getInstallationOctokit(26573885);
         execFile('bash', ['-c', `env_init_daemon.sh 2>&1 >> env_init_daemon.stdout | while IFS= read -r line; do echo [$(date +%FT%TZ)] [${uuid}] $line >> env_init_daemon.stderr; done; cat env_init_daemon.stdout`], { uid: 0, encoding: 'utf-8' }, (error, stdout, stderr)=>{
             for (const line of stdout.split(/\r?\n/)){
                 if (line.includes("ms_checker.detail: ")){
@@ -63,7 +64,7 @@ async function daemon_run(app){
                         let commit = detail.split(',')[1]
                         let prid = detail.split(',')[2]
                         app.log.info(`[ DAEMON ] [${uuid}] Result: ${PRPrefix}${prid} ${result} ${commit}`);
-                        if (prid == 189041){
+                        if (prid == 18904){
                             param={
                                 owner: 'sonic-net',
                                 repo: 'sonic-buildimage',
@@ -81,7 +82,7 @@ async function daemon_run(app){
                                 param.status = COMPLETED
                             }
                             app.log.info(`[ DAEMON ] [${uuid}] check_create ${PRPrefix}${prid} ${result}`)
-                            appclinet.octokit.rest.checks.create(param);
+                            oct.request("POST /repos/sonic-net/sonic-buildimage/check-runs", param);
                         }
                     }
                 }
