@@ -63,7 +63,7 @@ async function daemon_run(app){
                         let commit = detail.split(',')[1]
                         let prid = detail.split(',')[2]
                         app.log.info(`[ DAEMON ] [${uuid}] Result: ${PRPrefix}${prid} ${result} ${commit}`);
-                        if (prid == 18904){
+                        if (prid == 189041){
                             param={
                                 owner: 'sonic-net',
                                 repo: 'sonic-buildimage',
