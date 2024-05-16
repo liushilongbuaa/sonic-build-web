@@ -83,7 +83,7 @@ async function daemon_run(app){
                             }
                             app.log.info(`[ DAEMON ] [${uuid}] check_create ${PRPrefix}${prid} ${result}`)
                             let re = await oct.request("POST /repos/sonic-net/sonic-buildimage/check-runs", param);
-                            app.log.info(`[ DAEMON ] [${uuid}] check_create ${re.data}`)
+                            app.log.info(`[ DAEMON ] [${uuid}] check_create ${JSON.stringify(re.data)}`)
                         }
                     }
                 }
