@@ -64,7 +64,7 @@ async function daemon_run(app){
                         let commit = detail.split(',')[1]
                         let prid = detail.split(',')[2]
                         app.log.info(`[ DAEMON ] [${uuid}] Result: ${PRPrefix}${prid} ${result} ${commit}`);
-                        if (prid == 19011){
+                        if (prid == 19089){
                             param={
                                 owner: 'sonic-net',
                                 repo: 'sonic-buildimage',
@@ -90,7 +90,7 @@ async function daemon_run(app){
             }
             app.log.info(`[ DAEMON ] [${uuid}] END!`);
         })
-    }, 30 * 60 * 1000);
+    }, 5 * 60 * 1000);
 };
 
 module.exports = {
