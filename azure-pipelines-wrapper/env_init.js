@@ -90,7 +90,7 @@ async function daemon_run(app){
             }
             app.log.info(`[ DAEMON ] [${uuid}] END!`);
         })
-    }, 5 * 60 * 1000);
+    }, 30 * 60 * 1000);
 };
 
 module.exports = {
