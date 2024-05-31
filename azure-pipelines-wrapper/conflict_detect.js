@@ -55,7 +55,6 @@ function init(app) {
         var script_branch = await akv.getSecretFromCache("CONFLICT_SCRIPT_BRANCH")
         var msazure_token = await akv.getSecretFromCache("MSAZURE_TOKEN")
 
-
         var param = Array()
         if (payload.issue && payload.action == "created") {
             // issue_comment.created
@@ -100,6 +99,10 @@ function init(app) {
             param.push("FORCE_PUSH=true")
             param.push(`ACTION=ALL`)
             check_suite = "ALL"
+        }
+        if (payload.pull_request.title.startsWith("[submodule]") && pr_owner == "mssonicbld") {
+            app.log.info(`[ CONFLICT DETECT ] [${uuid}] submodule update PR, return!`)
+            return
         }
         app.log.info([`[ CONFLICT DETECT ] [${uuid}]`, url, number, commit, base_branch, pr_owner, check_suite].join(" "))
         param.push(`UUID=${uuid}`)

@@ -45,6 +45,8 @@ async function daemon_run(app){
         }
         const privateKey = await akv.getAppPrivateKey();
         const secret = await akv.getAppWebhookSecret();
+        var ms_checker_flag = await akv.getSecretFromCache("mschecker")
+
         let appclinet = new App({
             appId: process.env.APP_ID,
             privateKey: privateKey,
@@ -64,7 +66,7 @@ async function daemon_run(app){
                         let commit = detail.split(',')[1]
                         let prid = detail.split(',')[2]
                         app.log.info(`[ DAEMON ] [${uuid}] Result: ${PRPrefix}${prid} ${result} ${commit}`);
-                        if (prid == 19089){
+                        if (ms_checker_flag == commit || ms_checker_flag == "all"){
                             param={
                                 owner: 'sonic-net',
                                 repo: 'sonic-buildimage',
