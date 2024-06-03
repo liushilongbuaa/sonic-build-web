@@ -99,11 +99,12 @@ function init(app) {
             param.push("FORCE_PUSH=true")
             param.push(`ACTION=ALL`)
             check_suite = "ALL"
+            if (payload.pull_request.title.startsWith("[submodule]") && pr_owner == "mssonicbld") {
+                app.log.info(`[ CONFLICT DETECT ] [${uuid}] submodule update PR, return!`)
+                return
+            }
         }
-        if (payload.pull_request.title.startsWith("[submodule]") && pr_owner == "mssonicbld") {
-            app.log.info(`[ CONFLICT DETECT ] [${uuid}] submodule update PR, return!`)
-            return
-        }
+
         app.log.info([`[ CONFLICT DETECT ] [${uuid}]`, url, number, commit, base_branch, pr_owner, check_suite].join(" "))
         param.push(`UUID=${uuid}`)
         param.push(`REPO=${repo}`)
