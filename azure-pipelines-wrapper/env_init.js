@@ -57,7 +57,7 @@ async function daemon_run(app){
         let data = await appclinet.octokit.request("/app");
         app.log.info(`[ DAEMON ] [${uuid}] START ${data.data.name}!`);
         let oct = await appclinet.getInstallationOctokit(26573885);
-        execFile('bash', ['-c', `env_init_daemon.sh 2>&1 > env_init_daemon.stdout | while IFS= read -r line; do echo [$(date +%FT%TZ)] [${uuid}] $line >> env_init_daemon.stderr; done; cat env_init_daemon.stdout`], { uid: 0, encoding: 'utf-8' }, async (error, stdout, stderr)=>{
+        execFile('bash', ['-c', `env_init_daemon.sh ${uuid} 2>&1 > env_init_daemon.stdout | while IFS= read -r line; do echo [$(date +%FT%TZ)] [${uuid}] $line >> env_init_daemon.stderr; done; cat env_init_daemon.stdout`], { uid: 0, encoding: 'utf-8' }, async (error, stdout, stderr)=>{
             for (const line of stdout.split(/\r?\n/)){
                 if (line.includes("ms_checker.detail: ")){
                     let detail = line.split(' ').pop()

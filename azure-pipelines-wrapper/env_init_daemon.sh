@@ -1,5 +1,6 @@
 #!/bin/bash -ex
 
+uuid=$1
 echo "$(date '+%FT%TZ') daemon script start!"
 cd site/wwwroot/workspace
 rm -rf $(find . -maxdepth 2 -name "tmp.*" -type d -ctime +30)
@@ -10,32 +11,28 @@ fi
 
 cd conflict-sonic-buildimage
 mkdir -p daemon
-touch daemon/done.list
+touch daemon/done
+rm -rf daemon/todo daemon/tmp.*
 
-folders=$(find . -maxdepth 2 -name .bashenv -mtime -1 -mmin +120)
-echo "$(date '+%FT%TZ') folders: $folders"
-if [ -n "$folders" ]; then
-    grep PR_NUMBER $folders | awk -F/.bashenv:PR_NUMBER= '{print$1,$2}' | sort -k 2 -u
-    if ls daemon/done.list;then
-        grep PR_NUMBER $folders | awk -F/.bashenv:PR_NUMBER= '{print$1,$2}' | sort -k 2 -u | awk '{print$1}' | grep -v -f daemon/done.list > daemon/todo.list
-    else
-        grep PR_NUMBER $folders | awk -F/.bashenv:PR_NUMBER= '{print$1,$2}' | sort -k 2 -u | awk '{print$1}' > daemon/todo.list
+bashenvs=$(find . -maxdepth 2 -name .bashenv -mtime -5 -mmin +120)
+cd daemon
+for bashenv in $bashenvs; do
+    grep FORCE_PUSH=true ../$bashenv || continue
+    PR_NUMBER=$(grep PR_NUMBER ../$bashenv | awk -F= '{print$2}')
+    TMP_NAME=$(echo $bashenv | awk -F/ '{print$2}')
+    TMP_DATE=$(stat ../$bashenv | grep Birth | sed 's/ Birth: //' | awk -F. '{print$1}')
+    if grep ^$PR_NUMBER,$TMP_NAME, done; then
+        continue
     fi
-    cd daemon
-    todolist=$(cat todo.list)
-    if [ -n "$todolist" ]; then
-        for i in $todolist; do
-            grep FORCE_PUSH=true ../$i/.bashenv || continue
-            echo "$(date '+%FT%TZ') FORCE_PUSH: $i $(grep -Eo FORCE_PUSH=.* ../$i/.bashenv)"
-            mkdir $i || continue
-            cp ../$i/.bashenv ../$i/script.sh $i/
-            cd $i
-            echo ACTION=ms_checker >> .bashenv
-            . .bashenv
-            ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/"
-            cd ..
-            echo $i >> done.list
-            sleep 2
-        done
+    mkdir $TMP_NAME
+    cp ../$TMP_NAME/.bashenv ../$TMP_NAME/script.sh $TMP_NAME/
+    cd $TMP_NAME
+    echo ACTION=ms_checker >> .bashenv
+    . .bashenv
+    ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" | tee result
+    sleep 1
+    if grep success result; then
+        echo $PR_NUMBER,$TMP_NAME,$TMP_DATE,$uuid >> done
     fi
-fi
+    cd ..
+done
