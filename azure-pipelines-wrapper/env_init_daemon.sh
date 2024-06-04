@@ -32,7 +32,7 @@ for bashenv in $bashenvs; do
     ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" | tee result
     sleep 1
     if grep success result; then
-        echo $PR_NUMBER,$TMP_NAME,$TMP_DATE,$uuid >> done
+        echo $PR_NUMBER,$TMP_NAME,$TMP_DATE,$uuid >> ../done
     fi
     cd ..
 done
