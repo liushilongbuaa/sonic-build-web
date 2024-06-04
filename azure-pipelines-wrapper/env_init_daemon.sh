@@ -24,6 +24,10 @@ for bashenv in $bashenvs; do
     if grep ^$PR_NUMBER,$TMP_NAME, done; then
         continue
     fi
+    if [[ $(gh pr -R sonic-net/sonic-buildimage view $PR_NUMBER --json url,closed --jq .closed) == 'true' ]]; then
+        echo $PR_NUMBER,$TMP_NAME,$TMP_DATE,$uuid >> done
+        continue
+    fi
     mkdir $TMP_NAME
     cp ../$TMP_NAME/.bashenv ../$TMP_NAME/script.sh $TMP_NAME/
     cd $TMP_NAME
@@ -31,8 +35,8 @@ for bashenv in $bashenvs; do
     . .bashenv
     ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" | tee result
     sleep 1
-    if grep success result; then
-        echo $PR_NUMBER,$TMP_NAME,$TMP_DATE,$uuid >> ../done
-    fi
     cd ..
+    if grep success result; then
+        echo $PR_NUMBER,$TMP_NAME,$TMP_DATE,$uuid >> done
+    fi
 done
