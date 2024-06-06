@@ -61,7 +61,7 @@ async function daemon_run(app){
             for (const line of stdout.split(/\r?\n/)){
                 if (line.includes("ms_checker.detail: ")){
                     let detail = line.split(' ').pop()
-                    if (detail.split(',').length == 3){
+                    if (detail.split(',').length == 4){
                         let result = detail.split(',')[0]
                         let commit = detail.split(',')[1]
                         let msprid = detail.split(',')[2]
