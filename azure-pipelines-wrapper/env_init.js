@@ -61,11 +61,12 @@ async function daemon_run(app){
             for (const line of stdout.split(/\r?\n/)){
                 if (line.includes("ms_checker.detail: ")){
                     let detail = line.split(' ').pop()
-                    if (detail.split(',').length == 4){
+                    if (detail.split(',').length >= 5){
                         let result = detail.split(',')[0]
                         let commit = detail.split(',')[1]
                         let msprid = detail.split(',')[2]
                         let prid = detail.split(',')[3]
+                        let msg = detail.split(',')[4]
                         app.log.info(`[ DAEMON ] [${uuid}] Result: ${PRPrefix}${msprid} ${prid} ${result} ${commit}`);
                         if (ms_checker_flag == commit || ms_checker_flag == "all"){
                             param={
@@ -75,7 +76,7 @@ async function daemon_run(app){
                                 name: MsChecker,
                                 output: {
                                     title: "MS PR validation",
-                                    summary: `Please check result in ${PRPrefix}${msprid}`,
+                                    summary: `Please check result in ${PRPrefix}${msprid}<br>${msg}`,
                                 },
                             }
                             if ( result == InProgress ) {
