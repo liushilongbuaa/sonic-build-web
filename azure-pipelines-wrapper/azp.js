@@ -41,7 +41,7 @@ async function getProperties(check_run) {
     console.log(`check_run: ${check_run.id}`);
     console.log(`check_run details_url: ${check_run.details_url}`);
     var result = {};
-    if ('value' in properties){
+    if (properties != null && 'value' in properties){
         for (const [key, value] of Object.entries(properties.value)) {
             if ('$value' in value){
                 result[key] = value['$value'];

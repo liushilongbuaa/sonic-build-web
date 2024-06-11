@@ -67,7 +67,7 @@ async function daemon_run(app){
                         let msprid = detail.split(',')[2]
                         let prid = detail.split(',')[3]
                         let msg = detail.split(',')[4]
-                        app.log.info(`[ DAEMON ] [${uuid}] Result: ${PRPrefix}${msprid} ${prid} ${result} ${commit}`);
+                        app.log.info(`[ DAEMON ] [${uuid}] Result: ${PRPrefix}${msprid} ${prid} ${result} ${commit} ${ms_checker_flag}`);
                         if (ms_checker_flag == commit || ms_checker_flag == "all"){
                             param={
                                 owner: 'sonic-net',
