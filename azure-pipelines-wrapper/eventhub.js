@@ -25,19 +25,20 @@ async function sendEventBatch(eventDatas)
             app.log.error("[ EVENTHUB ] Failed to add eventData");
         }
     });
-    await producer.sendBatch(batch);
+    let rc = await producer.sendBatch(batch);
+    app.log.info(`[ EVENTHUB ] ${rc}`)
 }
 
 function init(app)
 {
     app.log.info('eventhub init');
     app.onAny(async (context) => {
-        app.log.info({timestamp: new Date().toISOString(), event: context.name, action: context.payload.action });
-        console.log(`Log event ${context.name} ${context.payload.action} to event hubs`);
+        let dateString = new Date().toISOString()
+        app.log.info(`[ EVENTHUB ] timestamp: ${dateString}, event: ${context.name}, action: ${context.payload.action}`);
 
         var eventDatas = [];
         var eventData = {
-            body: {"Timestamp": new Date().toISOString(), "Name": context.name, "Action": context.payload.action, "Payload": context.payload}
+            body: {"Timestamp": dateString, "Name": context.name, "Action": context.payload.action, "Payload": context.payload}
         };
         eventDatas.push(eventData);
         await sendEventBatch(eventDatas);
