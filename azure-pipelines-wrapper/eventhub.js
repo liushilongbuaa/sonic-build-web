@@ -14,7 +14,7 @@ async function getProducer(){
     return producer;
 }
 
-async function sendEventBatch(eventDatas)
+async function sendEventBatch(eventDatas, app)
 {
     if (producer == null){
         producer = new EventHubProducerClient(eventHubNamespace, eventHubName, credential);
@@ -41,7 +41,7 @@ function init(app)
             body: {"Timestamp": dateString, "Name": context.name, "Action": context.payload.action, "Payload": context.payload}
         };
         eventDatas.push(eventData);
-        await sendEventBatch(eventDatas);
+        await sendEventBatch(eventDatas, app);
       });
 }
 
