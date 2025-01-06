@@ -6,6 +6,7 @@ if (( $(stat --format %s /home/env_init_daemon.stderr)/1000/1000/1000 > 2 )); th
     split -l 1000000 -d env_init_daemon.stderr.back env_init_daemon.stderr.back
     cd -
 fi
+exit 0
 uuid=$1
 echo "$(date '+%FT%TZ') daemon script start!"
 cd site/wwwroot/workspace
@@ -16,11 +17,11 @@ if (( "$(df -h | grep '% /home' | awk '{print$5}' | grep -Eo [0-9]*)" > "60"));t
 fi
 
 cd conflict-sonic-buildimage
-mkdir -p daemon
+mkdir -p daemon/$uuid
 touch daemon/done
 rm -rf daemon/todo daemon/tmp.*
 
-bashenvs=$(find . -maxdepth 2 -name .bashenv -mtime -5 -mmin +120)
+bashenvs=$(find . -maxdepth 2 -name .bashenv -mtime -25 -mmin +120)
 cd daemon
 for bashenv in $bashenvs; do
     grep FORCE_PUSH=true ../$bashenv || continue
@@ -39,10 +40,12 @@ for bashenv in $bashenvs; do
     cd $TMP_NAME
     echo ACTION=ms_checker >> .bashenv
     . .bashenv
-    ./script.sh | sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" | tee result
+    ./script.sh 2>stderr 1>stdout
+    sed "s/ms_checker.result: /ms_checker.result: $PR_NUMBER=/" stdout
     sleep 1
     cd ..
-    if grep success $TMP_NAME/result; then
+    if grep success $TMP_NAME/stdout; then
         echo $PR_NUMBER,$TMP_NAME,$TMP_DATE,$uuid >> done
     fi
 done
+mv tmp.* $uuid/

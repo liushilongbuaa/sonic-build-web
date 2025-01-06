@@ -2,7 +2,7 @@ const spawnSync = require('child_process').spawnSync;
 const akv = require('./keyvault');
 const repos = ["sonic-net/sonic-utilities", "sonic-net/sonic-swss", "sonic-net/sonic-sairedis", "sonic-net/sonic-swss-common", "sonic-net/sonic-dbsyncd", "sonic-net/sonic-gnmi", "sonic-net/sonic-host-services",
               "sonic-net/sonic-linkmgrd", "sonic-net/sonic-linux-kernel", "sonic-net/sonic-mgmt-common", "sonic-net/sonic-mgmt-framework", "sonic-net/sonic-platform-common", "sonic-net/sonic-platform-daemons",
-              "sonic-net/sonic-py-swsssdk", "sonic-net/sonic-restapi", "sonic-net/sonic-snmpagent", "sonic-net/sonic-wpa-supplicant", "sonic-net/sonic-buildimage"];
+              "sonic-net/sonic-py-swsssdk", "sonic-net/sonic-restapi", "sonic-net/sonic-snmpagent", "sonic-net/sonic-wpa-supplicant", "sonic-net/sonic-buildimage", "sonic-net/sonic-ztp", "sonic-net/sonic-dhcp-relay"];
 
 function init(app) {
     app.log.info("[ AUTO CHERRY PICK ] Init auto cherry pick");
@@ -29,6 +29,7 @@ function init(app) {
         let script_url = await akv.getSecretFromCache("AUTO_CHERRYPICK_SCRIPT_URL")
 
         var param = Array()
+        param.push(`FOLDER=cherrypick`)
         param.push(`ACTION=${payload.action}`)
         param.push(`REPO=${repo}`)
         param.push(`ORG=${org}`)
@@ -52,7 +53,7 @@ function init(app) {
 
         app.log.info(["[ AUTO CHERRY PICK ]"].concat(param).join(" "))
 
-        var run = spawnSync('./auto_cherrypick.sh', param, { encoding: 'utf-8' })
+        var run = spawnSync('./bash_action.sh', param, { encoding: 'utf-8' })
         if (run.status != 0){
             app.log.error(`[ AUTO CHERRY PICK ] Unexpected error! path: ${repo}/${run.output}`)
             return

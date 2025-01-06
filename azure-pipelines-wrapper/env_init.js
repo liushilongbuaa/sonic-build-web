@@ -68,24 +68,20 @@ async function daemon_run(app){
                         let prid = detail.split(',')[3]
                         let msg = detail.split(',')[4]
                         app.log.info(`[ DAEMON ] [${uuid}] Result: ${PRPrefix}${msprid} ${prid} ${result} ${commit} ${ms_checker_flag}`);
-                        if (ms_checker_flag == commit || ms_checker_flag == "all"){
+                        if (result != "in_progress"){
                             param={
                                 owner: 'sonic-net',
                                 repo: 'sonic-buildimage',
                                 head_sha: commit,
                                 name: MsChecker,
+                                status: COMPLETED,
+                                conclusion: 'success', // TODO
                                 output: {
                                     title: "MS PR validation",
                                     summary: `Please check result in ${PRPrefix}${msprid}<br>${msg}`,
                                 },
                             }
-                            if ( result == InProgress ) {
-                                param.status = result
-                            } else {
-                                param.conclusion = result
-                                param.status = COMPLETED
-                            }
-                            app.log.info(`[ DAEMON ] [${uuid}] check_create ${PRPrefix}${msprid} ${prid}`)
+                            app.log.info(`[ DAEMON ] [${uuid}] check_create ${PRPrefix}${msprid} ${prid} ${result}`)
                             let re = await oct.request("POST /repos/sonic-net/sonic-buildimage/check-runs", param);
                             app.log.info(`[ DAEMON ] [${uuid}] check_create ${JSON.stringify(re.data)}`)
                         }

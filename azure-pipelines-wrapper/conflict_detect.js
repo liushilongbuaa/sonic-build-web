@@ -45,17 +45,38 @@ function init(app) {
         var full_name = payload.repository.full_name
         var owner = full_name.split('/')[0]
         var repo = full_name.split('/')[1]
+        var gh_token = await akv.getGithubToken()
+        // comment to start PR validation.
+        if (payload.pull_request) {
+            var body = ''
+            var issue_number = payload.number.toString()
+            var pr_owner = payload.pull_request.user.login
+            if ("sonic-net/sonic-buildimage" != full_name) {
+                body='/azp run'
+            } else {
+                body='/azp run Azure.sonic-buildimage'
+            }
+            const sonicbld_octokit = new Octokit({
+                auth: gh_token,
+            });
+            sonicbld_octokit.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+            });
+        }
         if ("sonic-net/sonic-buildimage" != full_name) {
             app.log.info(`[ CONFLICT DETECT ] [${uuid}] repo not match!`)
             return
         }
 
         var url, number, commit, base_branch, pr_owner, check_suite
-        var gh_token = await akv.getSecretFromCache("GH_TOKEN")
         var script_branch = await akv.getSecretFromCache("CONFLICT_SCRIPT_BRANCH")
         var msazure_token = await akv.getSecretFromCache("MSAZURE_TOKEN")
 
         var param = Array()
+        param.push(`FOLDER=conflict`)
         if (payload.issue && payload.action == "created") {
             // issue_comment.created
             let comment_body = payload.comment.body.trim().toLowerCase()
@@ -77,6 +98,7 @@ function init(app) {
                 check_suite = MsConflict
                 if (comment_body.includes(" -f ") || comment_body.endsWith(" -f")){
                     param.push("FORCE_PUSH=true")
+                    check_suite = "ALL"
                 } else {
                     param.push("FORCE_PUSH=false")
                 }
@@ -87,7 +109,7 @@ function init(app) {
                 return
             }
             comment_body=comment_body.replace('/azpw ', '')
-            param.push(`ACTION="${comment_body}"`)
+            param.push(`ACTION="${check_suite}"`)
         } else {
             // pull_request.opened/synchronize/reopend
             url = payload.pull_request.html_url
@@ -109,8 +131,7 @@ function init(app) {
         param.push(`REPO=${repo}`)
         param.push(`GH_TOKEN=${gh_token}`)
         param.push(`MSAZURE_TOKEN=${msazure_token}`)
-        param.push(`SCRIPT_BRANCH=${script_branch}`)
-        param.push(`SCRIPT_NAME=ms_conflict_detect.sh`)
+        param.push(`SCRIPT_URL=https://mssonicbld:${gh_token}@raw.githubusercontent.com/Azure/sonic-pipelines-internal/${script_branch}/azure-pipelines/ms_conflict_detect.sh`)
         param.push(`PR_NUMBER=${number}`)
         param.push(`PR_URL=${url}`)
         param.push(`PR_OWNER=${pr_owner}`)
@@ -118,9 +139,10 @@ function init(app) {
         param.push(`PR_HEAD_COMMIT=${commit}`)
 
         // If it belongs to ms, comment on PR.
-        var description = '', comment_at = '', mspr = '', tmp = '', ms_conflict_result = '', ms_checker_result = ''
-        var run = spawnSync('./conflict_detect.sh', param, { encoding: 'utf-8' })
+        var description = '', comment_at = '', mspr = '', tmp = '', ms_conflict_result = '', ms_checker_result = '', output = ''
+        var run = spawnSync('./bash_action.sh', param, { encoding: 'utf-8' })
         for (const line of run.stdout.split(/\r?\n/)){
+            output = line
             if (line.includes("pr_owner: ")){
                 comment_at = line.split(' ').pop()
             }
@@ -152,7 +174,7 @@ function init(app) {
                 app.log.info([`[ CONFLICT DETECT ] [${uuid}] Github Branch Error!`, url].join(" "))
                 description = `@${comment_at} Github Branch not ready<br>Please wait a few minutes to run again!<br>'/azpw ${MsConflict}'`
             } else if (run.status != 0){
-                app.log.info([`[ CONFLICT DETECT ] [${uuid}] Unknown error liushilongbuaa need to check!`, url].join(" "))
+                app.log.info([`[ CONFLICT DETECT ] [${uuid}] Unknown error liushilongbuaa need to check! ${output}`, url].join(" "))
                 description = `@liushilongbuaa Please help check!<br>${mspr}<br>${tmp}`
             } else {
                 app.log.info([`[ CONFLICT DETECT ] [${uuid}] Exit: 0`, url].join(" "))
@@ -162,11 +184,12 @@ function init(app) {
         }
         if ( ['ALL',MsChecker].includes(check_suite) ) {
             description = `Please check result in ${mspr}`
-            if (ms_checker_result == InProgress){
-                check_create(app, context, uuid, owner, repo, commit, MsChecker, null, InProgress, "MS PR validation", description)
-            } else {
-                check_create(app, context, uuid, owner, repo, commit, MsChecker, ms_checker_result, COMPLETED, "MS PR validation", description)
-            }
+            check_create(app, context, uuid, owner, repo, commit, MsChecker, SUCCESS, COMPLETED, "MS PR validation\n"+ms_checker_result, '')
+            //if (ms_checker_result == InProgress){
+            //    check_create(app, context, uuid, owner, repo, commit, MsChecker, null, InProgress, "MS PR validation", description)
+            //} else {
+            //    check_create(app, context, uuid, owner, repo, commit, MsChecker, ms_checker_result, COMPLETED, "MS PR validation", description)
+            //}
         }
         app.log.error(`[ CONFLICT DETECT ] [${uuid}] Exit Code: ${run.status}`)
     });
