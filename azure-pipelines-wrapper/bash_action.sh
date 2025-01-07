@@ -18,7 +18,7 @@ mv $tmpfile .bashenv
 
 curl "$SCRIPT_URL" -o script.sh -L
 chmod +x script.sh
-./script.sh 2>&1 > log.log | while IFS= read -r line; do echo "[$(date '+%FT%TZ')] $line" >> error.log; done
+./script.sh 2>&1 | while IFS= read -r line; do echo "[$(date '+%FT%TZ')] $line" >> error.log; done
 
 rc=${PIPESTATUS[0]}
 echo "Exit Code: $rc" >> error.log
