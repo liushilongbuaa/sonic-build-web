@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # input FOLDER REPO SCRIPT_URL
-mkdir -p /workspace
 cd /workspace
 tmpfile=$(mktemp)
 for i in "$@";do
