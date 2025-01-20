@@ -9,15 +9,12 @@ const COMPLETED = 'completed'
 const PRPrefix = 'https://dev.azure.com/msazure/One/_git/Networking-acs-buildimage/pullrequest/'
 
 async function init(app){
-    while ( true ){
-        let run = execFileSync('bash', ['-c', 'env_init.sh 2>&1 | while IFS= read -r line; do echo [$(date +%FT%TZ)] $line >> env_init.stderr; done;' ], { encoding: 'utf-8' })
-        if (run.status == 0){
-            app.log.info(`[ INIT ] succeed!!!`)
-            return
-        }
-        app.log.error(`[ INIT ] ${run.status}`)
-        const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-        await delay(3000)
+    output = ''
+    try{
+        output = execFileSync('bash', ['-c', 'site/wwwroot/env_init.sh 2>&1 | while IFS= read -r line; do echo [$(date +%FT%TZ)] $line >> env_init.stderr; done;' ], { encoding: 'utf-8' })
+        app.log.info('[ INIT ] Succeeded!!!')
+    } catch(e){
+        app.log.error(`[ INIT ] Failed!!! ${output}`)
     }
 }
 
